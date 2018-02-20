@@ -1,126 +1,42 @@
 const expect = require('chai').expect;
 
-const Algorithms = require('../lib/index.js');
+const Parser = require('../lib/index.js');
 
-let alg;
+let parser;
+
+const SOH = 0x01,
+    EOT = 0x04;
+
+const BEGIN_MARKER = String.fromCharCode(SOH),
+    END_MARKER = String.fromCharCode(EOT);
 
 beforeEach(function() {
-    alg = new Algorithms();
+    parser = new Parser();
 });
 
-describe('Algorithm A', function() {
+describe("_parse", function() {
+    it("Should fail to parse and not emit", function(done) {
+        parser.on("json", (json) => {
+            done("Should not have parsed");
+        });
+        parser._parse("asdf");
+        done();
+    });
+
+    it("Should successfully parse", function(done) {
+        parser.on("json", (json) => {
+            done();
+        });
+        parser._parse("asdf");
+        done();
+    })
+});
+
+describe('Parser A', function() {
     let obj = [];
 
     beforeEach(function() {
-        alg.on('json', (json) => {
-            obj.push(json);
-        });
-    });
-
-    afterEach(function() {
-        obj = [];
-    });
-
-    it('Should throw out string with invalid starting character', function(done) {
-        alg._buffer = "asdf";
-
-        alg._algA(() => {
-            expect(alg._buffer).to.equal("");
-            expect(obj).to.be.empty;
-            done();
-        });
-    });
-
-    it("Should keep buffer if packet is not complete", function(done) {
-        alg._buffer = "[asdf";
-
-        alg._algA(() => {
-            expect(alg._buffer).to.equal("[asdf");
-            expect(obj).to.be.empty;
-            expect(alg._searchIndex).to.equal(5);
-            done();
-        });
-    });
-
-    it("Should attempt to parse packet that might be done", function(done) {
-        alg._buffer = "{{}";
-
-        alg._algA(() => {
-            expect(alg._buffer).to.equal("{{}");
-            expect(obj).to.be.empty;
-            expect(alg._searchIndex).to.equal(3);
-            done();
-        });
-    });
-
-    it("Should parse one JSON packet", function(done) {
-        alg._buffer = "{}";
-
-        alg._algA(() => {
-            expect(alg._buffer).to.equal("");
-            expect(obj).to.have.lengthOf(1);
-            expect(obj[0]).to.deep.eq({});
-            expect(alg._searchIndex).to.equal(0);
-            done();
-        });
-    });
-
-    it("Parse two messages in one packet", function(done) {
-        alg._buffer = "{}[]";
-
-        alg._algA(() => {
-            expect(alg._buffer).to.equal("");
-            expect(obj).to.have.lengthOf(2);
-            expect(obj[0]).to.deep.eq({});
-            expect(obj[1]).to.deep.eq([]);
-            expect(alg._searchIndex).to.equal(0);
-            done();
-        });
-    });
-
-    it("Parse one message and buffer the rest", function(done) {
-        alg._buffer = "{}[";
-
-        alg._algA(() => {
-            expect(alg._buffer).to.equal("[");
-            expect(obj).to.have.lengthOf(1);
-            expect(obj[0]).to.deep.eq({});
-            expect(alg._searchIndex).to.equal(1);
-            done();
-        });
-    });
-
-    it("Should parse two messages partially split between two packets", function(done) {
-        alg._buffer = `{"test":"te`;
-
-        alg._algA(() => {
-            expect(alg._buffer).to.equal('{"test":"te');
-            expect(obj).to.have.lengthOf(0);
-            expect(alg._searchIndex).to.equal(11);
-            
-            alg._buffer += `st"}{}`;
-            alg._algA(() => {
-                expect(alg._buffer).to.equal("");
-                expect(obj).to.have.lengthOf(2);
-                expect(obj[0]).to.deep.eq({test:"test"});
-                expect(obj[1]).to.deep.eq({});
-                expect(alg._searchIndex).to.equal(0);
-                done();
-            });
-        });
-    });
-});
-
-describe('Algorithm A2', function() {
-    let obj = [];
-    const SOH = 0x01,
-        EOT = 0x04;
-
-    const BEGIN_MARKER = String.fromCharCode(SOH),
-        END_MARKER = String.fromCharCode(EOT);
-
-    beforeEach(function() {
-        alg.on('json', (json) => {
+        parser.on('json', (json) => {
             obj.push(json);
         });
     });
@@ -130,33 +46,33 @@ describe('Algorithm A2', function() {
     });
 
     it('Should skip test when no valid starting character', function(done) {
-        alg._buffer = Buffer.from("asdf", 'utf8');
+        parser._buffer = Buffer.from("asdf", 'utf8');
 
-        alg._algA2(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer.length).length.to.equal(0);
+        parser._parserA(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.be.empty;
             done();
         });
     });
 
     it("Should keep buffer if packet is not complete", function(done) {
-        alg._buffer = Buffer.from(`[asdf`, 'utf8');
+        parser._buffer = Buffer.from(`[asdf`, 'utf8');
 
-        alg._algA2(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer).to.deep.equal(Buffer.from(`[asdf`, 'utf8'));
+        parser._parserA(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer).to.deep.equal(Buffer.from(`[asdf`, 'utf8'));
             expect(obj).to.be.empty;
             done();
         });
     });
 
     it("Should parse one JSON packet", function(done) {
-        alg._buffer = Buffer.from(`{}`, 'utf8');
+        parser._buffer = Buffer.from(`{}`, 'utf8');
 
-        alg._algA2(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer.length).length.to.equal(0);
+        parser._parserA(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(1);
             expect(obj[0]).to.deep.eq({});
             done();
@@ -164,11 +80,11 @@ describe('Algorithm A2', function() {
     });
 
     it("Parse two messages in one packet", function(done) {
-        alg._buffer = Buffer.from(`{}[]`, 'utf8');
+        parser._buffer = Buffer.from(`{}[]`, 'utf8');
 
-        alg._algA2(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer.length).length.to.equal(0);
+        parser._parserA(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(2);
             expect(obj[0]).to.deep.eq({});
             expect(obj[1]).to.deep.eq([]);
@@ -177,11 +93,11 @@ describe('Algorithm A2', function() {
     });
 
     it("Parse one message and buffer the rest", function(done) {
-        alg._buffer = Buffer.from(`{}[`, 'utf8');
+        parser._buffer = Buffer.from(`{}[`, 'utf8');
 
-        alg._algA2(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer).to.deep.equal(Buffer.from(`[`, 'utf8'));
+        parser._parserA(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer).to.deep.equal(Buffer.from(`[`, 'utf8'));
             expect(obj).to.have.lengthOf(1);
             expect(obj[0]).to.deep.eq({});
             done();
@@ -189,20 +105,20 @@ describe('Algorithm A2', function() {
     });
 
     it("Should parse two messages partially split between two packets", function(done) {
-        alg._buffer = Buffer.from(`{"test":"te`, 'utf8');
+        parser._buffer = Buffer.from(`{"test":"te`, 'utf8');
 
-        alg._algA2(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer).to.deep.equal(Buffer.from(`{"test":"te`, 'utf8'));
+        parser._parserA(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer).to.deep.equal(Buffer.from(`{"test":"te`, 'utf8'));
             expect(obj).to.have.lengthOf(0);
             
-            alg._buffer = Buffer.concat([
+            parser._buffer = Buffer.concat([
                 Buffer.from(`{"test":"te`, 'utf8'),
                 Buffer.from(`st"}{}`, 'utf8')
             ])
-            alg._algA2(() => {
-                expect(alg._buffer).to.be.instanceof(Buffer);
-                expect(alg._buffer.length).length.to.equal(0);
+            parser._parserA(() => {
+                expect(parser._buffer).to.be.instanceof(Buffer);
+                expect(parser._buffer.length).length.to.equal(0);
                 expect(obj).to.have.lengthOf(2);
                 expect(obj[0]).to.deep.eq({test:"test"});
                 expect(obj[1]).to.deep.eq({});
@@ -212,103 +128,11 @@ describe('Algorithm A2', function() {
     });
 });
 
-describe('Algorithm B', function() {
+describe('Parser B', function() {
     let obj = [];
 
     beforeEach(function() {
-        alg.on('json', (json) => {
-            obj.push(json);
-        });
-    });
-
-    afterEach(function() {
-        obj = [];
-    });
-
-    it('Should throw out string with invalid starting character', function(done) {
-        alg._buffer = "asdf";
-
-        alg._algB(() => {
-            expect(alg._buffer).to.equal("");
-            expect(obj).to.be.empty;
-            done();
-        });
-    });
-
-    it("Should keep buffer if packet is not complete", function(done) {
-        alg._buffer = "[asdf";
-
-        alg._algB(() => {
-            expect(alg._buffer).to.equal("[asdf");
-            expect(obj).to.be.empty;
-            done();
-        });
-    });
-
-    it("Should parse one JSON packet", function(done) {
-        alg._buffer = "{}";
-
-        alg._algB(() => {
-            expect(alg._buffer).to.equal("");
-            expect(obj).to.have.lengthOf(1);
-            expect(obj[0]).to.deep.eq({});
-            expect(alg._searchIndex).to.equal(0);
-            done();
-        });
-    });
-
-    it("Parse two messages in one packet", function(done) {
-        alg._buffer = "{}[]";
-
-        alg._algB(() => {
-            expect(alg._buffer).to.equal("");
-            expect(obj).to.have.lengthOf(2);
-            expect(obj[0]).to.deep.eq({});
-            expect(obj[1]).to.deep.eq([]);
-            done();
-        });
-    });
-
-    it("Parse one message and buffer the rest", function(done) {
-        alg._buffer = "{}[";
-
-        alg._algB(() => {
-            expect(alg._buffer).to.equal("[");
-            expect(obj).to.have.lengthOf(1);
-            expect(obj[0]).to.deep.eq({});
-            done();
-        });
-    });
-
-    it("Should parse two messages partially split between two packets", function(done) {
-        alg._buffer = `{"test":"te`;
-
-        alg._algB(() => {
-            expect(alg._buffer).to.equal('{"test":"te');
-            expect(obj).to.have.lengthOf(0);
-            
-            alg._buffer += `st"}{}`;
-            alg._algB(() => {
-                expect(alg._buffer).to.equal("");
-                expect(obj).to.have.lengthOf(2);
-                expect(obj[0]).to.deep.eq({test:"test"});
-                expect(obj[1]).to.deep.eq({});
-                done();
-            });
-        });
-    });
-});
-
-describe('Algorithm C', function() {
-    let obj = [];
-    const SOH = 0x01,
-        EOT = 0x04;
-
-    const BEGIN_MARKER = String.fromCharCode(SOH),
-        END_MARKER = String.fromCharCode(EOT);
-
-    beforeEach(function() {
-        alg.on('json', (json) => {
+        parser.on('json', (json) => {
             obj.push(json);
         });
     });
@@ -318,30 +142,33 @@ describe('Algorithm C', function() {
     });
 
     it('Should skip test when no valid starting character', function(done) {
-        alg._buffer = "asdf";
+        parser._buffer = Buffer.from("asdf", 'utf8');
 
-        alg._algC(() => {
-            expect(alg._buffer).to.equal("");
+        parser._parserB(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.be.empty;
             done();
         });
     });
 
     it("Should keep buffer if packet is not complete", function(done) {
-        alg._buffer = `${BEGIN_MARKER}asdf`;
+        parser._buffer = Buffer.from(`[asdf`, 'utf8');
 
-        alg._algC(() => {
-            expect(alg._buffer).to.equal(`${BEGIN_MARKER}asdf`);
+        parser._parserB(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer).to.deep.equal(Buffer.from(`[asdf`, 'utf8'));
             expect(obj).to.be.empty;
             done();
         });
     });
 
     it("Should parse one JSON packet", function(done) {
-        alg._buffer = `${BEGIN_MARKER}{}${END_MARKER}`;
+        parser._buffer = Buffer.from(`{}`, 'utf8');
 
-        alg._algC(() => {
-            expect(alg._buffer).to.equal("");
+        parser._parserB(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(1);
             expect(obj[0]).to.deep.eq({});
             done();
@@ -349,10 +176,11 @@ describe('Algorithm C', function() {
     });
 
     it("Parse two messages in one packet", function(done) {
-        alg._buffer = `${BEGIN_MARKER}{}${END_MARKER}${BEGIN_MARKER}[]${END_MARKER}`;
+        parser._buffer = Buffer.from(`{}[]`, 'utf8');
 
-        alg._algC(() => {
-            expect(alg._buffer).to.equal("");
+        parser._parserB(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(2);
             expect(obj[0]).to.deep.eq({});
             expect(obj[1]).to.deep.eq([]);
@@ -361,10 +189,11 @@ describe('Algorithm C', function() {
     });
 
     it("Parse one message and buffer the rest", function(done) {
-        alg._buffer = `${BEGIN_MARKER}{}${END_MARKER}${BEGIN_MARKER}[`;
+        parser._buffer = Buffer.from(`{}[`, 'utf8');
 
-        alg._algC(() => {
-            expect(alg._buffer).to.equal(`${BEGIN_MARKER}[`);
+        parser._parserB(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer).to.deep.equal(Buffer.from(`[`, 'utf8'));
             expect(obj).to.have.lengthOf(1);
             expect(obj[0]).to.deep.eq({});
             done();
@@ -372,15 +201,20 @@ describe('Algorithm C', function() {
     });
 
     it("Should parse two messages partially split between two packets", function(done) {
-        alg._buffer = `${BEGIN_MARKER}{"test":"te`;
+        parser._buffer = Buffer.from(`{"test":"te`, 'utf8');
 
-        alg._algC(() => {
-            expect(alg._buffer).to.equal(`${BEGIN_MARKER}{"test":"te`);
+        parser._parserB(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer).to.deep.equal(Buffer.from(`{"test":"te`, 'utf8'));
             expect(obj).to.have.lengthOf(0);
             
-            alg._buffer += `st"}${END_MARKER}${BEGIN_MARKER}{}${END_MARKER}`;
-            alg._algC(() => {
-                expect(alg._buffer).to.equal("");
+            parser._buffer = Buffer.concat([
+                Buffer.from(`{"test":"te`, 'utf8'),
+                Buffer.from(`st"}{}`, 'utf8')
+            ])
+            parser._parserB(() => {
+                expect(parser._buffer).to.be.instanceof(Buffer);
+                expect(parser._buffer.length).length.to.equal(0);
                 expect(obj).to.have.lengthOf(2);
                 expect(obj[0]).to.deep.eq({test:"test"});
                 expect(obj[1]).to.deep.eq({});
@@ -390,7 +224,7 @@ describe('Algorithm C', function() {
     });
 });
 
-describe('Algorithm D', function() {
+describe('Parser C', function() {
     let obj = [];
     const SOH = 0x01,
         EOT = 0x04;
@@ -399,7 +233,7 @@ describe('Algorithm D', function() {
         END_MARKER = String.fromCharCode(EOT);
 
     beforeEach(function() {
-        alg.on('json', (json) => {
+        parser.on('json', (json) => {
             obj.push(json);
         });
     });
@@ -409,30 +243,33 @@ describe('Algorithm D', function() {
     });
 
     it('Should skip test when no valid starting character', function(done) {
-        alg._buffer = "asdf";
+        parser._buffer = Buffer.from("asdf", 'utf8');
 
-        alg._algD(() => {
-            expect(alg._buffer).to.equal("");
+        parser._parserC(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.be.empty;
             done();
         });
     });
 
     it("Should keep buffer if packet is not complete", function(done) {
-        alg._buffer = `${BEGIN_MARKER}asdf`;
+        parser._buffer = Buffer.from(`${BEGIN_MARKER}asdf`, 'utf8');
 
-        alg._algD(() => {
-            expect(alg._buffer).to.equal(`${BEGIN_MARKER}asdf`);
+        parser._parserC(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer).to.deep.equal(Buffer.from(`${BEGIN_MARKER}asdf`, 'utf8'));
             expect(obj).to.be.empty;
             done();
         });
     });
 
     it("Should parse one JSON packet", function(done) {
-        alg._buffer = `${BEGIN_MARKER}{}${END_MARKER}`;
+        parser._buffer = Buffer.from(`${BEGIN_MARKER}{}${END_MARKER}`, 'utf8');
 
-        alg._algD(() => {
-            expect(alg._buffer).to.equal("");
+        parser._parserC(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(1);
             expect(obj[0]).to.deep.eq({});
             done();
@@ -440,10 +277,11 @@ describe('Algorithm D', function() {
     });
 
     it("Parse two messages in one packet", function(done) {
-        alg._buffer = `${BEGIN_MARKER}{}${END_MARKER}${BEGIN_MARKER}[]${END_MARKER}`;
+        parser._buffer = Buffer.from(`${BEGIN_MARKER}{}${END_MARKER}${BEGIN_MARKER}[]${END_MARKER}`, 'utf8');
 
-        alg._algD(() => {
-            expect(alg._buffer).to.equal("");
+        parser._parserC(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(2);
             expect(obj[0]).to.deep.eq({});
             expect(obj[1]).to.deep.eq([]);
@@ -452,10 +290,11 @@ describe('Algorithm D', function() {
     });
 
     it("Parse one message and buffer the rest", function(done) {
-        alg._buffer = `${BEGIN_MARKER}{}${END_MARKER}${BEGIN_MARKER}[`;
+        parser._buffer = Buffer.from(`${BEGIN_MARKER}{}${END_MARKER}${BEGIN_MARKER}[`, 'utf8');
 
-        alg._algD(() => {
-            expect(alg._buffer).to.equal(`${BEGIN_MARKER}[`);
+        parser._parserC(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer).to.deep.equal(Buffer.from(`${BEGIN_MARKER}[`, 'utf8'));
             expect(obj).to.have.lengthOf(1);
             expect(obj[0]).to.deep.eq({});
             done();
@@ -463,116 +302,20 @@ describe('Algorithm D', function() {
     });
 
     it("Should parse two messages partially split between two packets", function(done) {
-        alg._buffer = `${BEGIN_MARKER}{"test":"te`;
+        parser._buffer = Buffer.from(`${BEGIN_MARKER}{"test":"te`, 'utf8');
 
-        alg._algD(() => {
-            expect(alg._buffer).to.equal(`${BEGIN_MARKER}{"test":"te`);
+        parser._parserC(() => {
+            expect(parser._buffer).to.be.instanceof(Buffer);
+            expect(parser._buffer).to.deep.equal(Buffer.from(`${BEGIN_MARKER}{"test":"te`, 'utf8'));
             expect(obj).to.have.lengthOf(0);
             
-            alg._buffer += `st"}${END_MARKER}${BEGIN_MARKER}{}${END_MARKER}`;
-            alg._algD(() => {
-                expect(alg._buffer).to.equal("");
-                expect(obj).to.have.lengthOf(2);
-                expect(obj[0]).to.deep.eq({test:"test"});
-                expect(obj[1]).to.deep.eq({});
-                done();
-            });
-        });
-    });
-});
-
-describe('Algorithm E', function() {
-    let obj = [];
-    const SOH = 0x01,
-        EOT = 0x04;
-
-    const BEGIN_MARKER = String.fromCharCode(SOH),
-        END_MARKER = String.fromCharCode(EOT);
-
-    beforeEach(function() {
-        alg.on('json', (json) => {
-            obj.push(json);
-        });
-    });
-
-    afterEach(function() {
-        obj = [];
-    });
-
-    it('Should skip test when no valid starting character', function(done) {
-        alg._buffer = Buffer.from("asdf", 'utf8');
-
-        alg._algE(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer.length).length.to.equal(0);
-            expect(obj).to.be.empty;
-            done();
-        });
-    });
-
-    it("Should keep buffer if packet is not complete", function(done) {
-        alg._buffer = Buffer.from(`${BEGIN_MARKER}asdf`, 'utf8');
-
-        alg._algE(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer).to.deep.equal(Buffer.from(`${BEGIN_MARKER}asdf`, 'utf8'));
-            expect(obj).to.be.empty;
-            done();
-        });
-    });
-
-    it("Should parse one JSON packet", function(done) {
-        alg._buffer = Buffer.from(`${BEGIN_MARKER}{}${END_MARKER}`, 'utf8');
-
-        alg._algE(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer.length).length.to.equal(0);
-            expect(obj).to.have.lengthOf(1);
-            expect(obj[0]).to.deep.eq({});
-            done();
-        });
-    });
-
-    it("Parse two messages in one packet", function(done) {
-        alg._buffer = Buffer.from(`${BEGIN_MARKER}{}${END_MARKER}${BEGIN_MARKER}[]${END_MARKER}`, 'utf8');
-
-        alg._algE(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer.length).length.to.equal(0);
-            expect(obj).to.have.lengthOf(2);
-            expect(obj[0]).to.deep.eq({});
-            expect(obj[1]).to.deep.eq([]);
-            done();
-        });
-    });
-
-    it("Parse one message and buffer the rest", function(done) {
-        alg._buffer = Buffer.from(`${BEGIN_MARKER}{}${END_MARKER}${BEGIN_MARKER}[`, 'utf8');
-
-        alg._algE(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer).to.deep.equal(Buffer.from(`${BEGIN_MARKER}[`, 'utf8'));
-            expect(obj).to.have.lengthOf(1);
-            expect(obj[0]).to.deep.eq({});
-            done();
-        });
-    });
-
-    it("Should parse two messages partially split between two packets", function(done) {
-        alg._buffer = Buffer.from(`${BEGIN_MARKER}{"test":"te`, 'utf8');
-
-        alg._algE(() => {
-            expect(alg._buffer).to.be.instanceof(Buffer);
-            expect(alg._buffer).to.deep.equal(Buffer.from(`${BEGIN_MARKER}{"test":"te`, 'utf8'));
-            expect(obj).to.have.lengthOf(0);
-            
-            alg._buffer = Buffer.concat([
+            parser._buffer = Buffer.concat([
                 Buffer.from(`${BEGIN_MARKER}{"test":"te`, 'utf8'),
                 Buffer.from(`st"}${END_MARKER}${BEGIN_MARKER}{}${END_MARKER}`, 'utf8')
             ])
-            alg._algE(() => {
-                expect(alg._buffer).to.be.instanceof(Buffer);
-                expect(alg._buffer.length).length.to.equal(0);
+            parser._parserC(() => {
+                expect(parser._buffer).to.be.instanceof(Buffer);
+                expect(parser._buffer.length).length.to.equal(0);
                 expect(obj).to.have.lengthOf(2);
                 expect(obj[0]).to.deep.eq({test:"test"});
                 expect(obj[1]).to.deep.eq({});
