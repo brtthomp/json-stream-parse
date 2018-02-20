@@ -91,6 +91,19 @@ for(let i = 0; i < MAX; i += 1) {
 avg = avg/MAX;
 console.log(`\t\t${avg.toFixed(3)}ms`);
 
+console.log("\tAlgorithm 1a");
+for(let i = 0; i < MAX; i += 1) {
+    obj = [];
+    parser.algorithm = 0;
+    begin = now();
+    parser._write(buf1, null, noop);
+    end = now();
+    if(JSON.stringify(obj[0]) !== string1) console.error("NO OBJECT!");
+    avg += end - begin;
+}
+avg = avg/MAX;
+console.log(`\t\t${avg.toFixed(3)}ms`);
+
 console.log("\tAlgorithm 2");
 for(let i = 0; i < MAX; i += 1) {
     obj = [];
@@ -176,6 +189,19 @@ for(let i = 0; i < MAX; i += 1) {
 avg = avg/MAX;
 console.log(`\t\t${avg.toFixed(3)}ms`);
 
+console.log("\tAlgorithm 1a");
+for(let i = 0; i < MAX; i += 1) {
+    obj = [];
+    parser.algorithm = 0;
+    begin = now();
+    parser._write(buf2, null, noop);
+    end = now();
+    if(JSON.stringify(obj[0]) !== string2) console.error("NO OBJECT!");
+    avg += end - begin;
+}
+avg = avg/MAX;
+console.log(`\t\t${avg.toFixed(3)}ms`);
+
 console.log("\tAlgorithm 3");
 for(let i = 0; i < MAX; i += 1) {
     obj = [];
@@ -226,6 +252,19 @@ console.log("\tAlgorithm 1");
 for(let i = 0; i < MAX; i += 1) {
     obj = [];
     parser.algorithm = 1;
+    begin = now();
+    parser._write(buf3, null, noop);
+    end = now();
+    if(JSON.stringify(obj[0]) !== string3) console.error("NO OBJECT!");
+    avg += end - begin;
+}
+avg = avg/MAX;
+console.log(`\t\t${avg.toFixed(3)}ms`);
+
+console.log("\tAlgorithm 1a");
+for(let i = 0; i < MAX; i += 1) {
+    obj = [];
+    parser.algorithm = 0;
     begin = now();
     parser._write(buf3, null, noop);
     end = now();
@@ -298,6 +337,19 @@ console.log("\tAlgorithm 1");
 for(let i = 0; i < MAX; i += 1) {
     obj = [];
     parser.algorithm = 1;
+    begin = now();
+    parser._write(buf4, null, noop);
+    end = now();
+    if(JSON.stringify(obj[0]) !== string4) console.error("NO OBJECT!");
+    avg += end - begin;
+}
+avg = avg/MAX;
+console.log(`\t\t${avg.toFixed(3)}ms`);
+
+console.log("\tAlgorithm 1a");
+for(let i = 0; i < MAX; i += 1) {
+    obj = [];
+    parser.algorithm = 0;
     begin = now();
     parser._write(buf4, null, noop);
     end = now();
@@ -380,6 +432,19 @@ for(let i = 0; i < MAX; i += 1) {
 avg = avg/MAX;
 console.log(`\t\t${avg.toFixed(3)}ms`);
 
+console.log("\tAlgorithm 1a");
+for(let i = 0; i < MAX; i += 1) {
+    obj = [];
+    parser.algorithm = 0;
+    begin = now();
+    parser._write(buf5, null, noop);
+    end = now();
+    if(JSON.stringify(obj[0]) !== string4 || JSON.stringify(obj[1]) !== string4) console.error("NO OBJECT!");
+    avg += end - begin;
+}
+avg = avg/MAX;
+console.log(`\t\t${avg.toFixed(3)}ms`);
+
 console.log("\tAlgorithm 2");
 for(let i = 0; i < MAX; i += 1) {
     obj = [];
@@ -450,6 +515,21 @@ console.log("\tAlgorithm 1");
 for(let i = 0; i < MAX; i += 1) {
     obj = [];
     parser.algorithm = 1;
+    begin = now();
+    parser._write(buf6a, null, noop);
+    parser._write(buf6b, null, noop);
+    parser._write(buf6c, null, noop);
+    end = now();
+    if(JSON.stringify(obj[0]) !== string6Full) console.error("NO OBJECT!");
+    avg += end - begin;
+}
+avg = avg/MAX;
+console.log(`\t\t${avg.toFixed(3)}ms`);
+
+console.log("\tAlgorithm 1a");
+for(let i = 0; i < MAX; i += 1) {
+    obj = [];
+    parser.algorithm = 0;
     begin = now();
     parser._write(buf6a, null, noop);
     parser._write(buf6b, null, noop);
