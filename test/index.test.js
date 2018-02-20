@@ -32,7 +32,7 @@ describe("_parse", function() {
     })
 });
 
-describe('Parser A', function() {
+describe('_parserA', function() {
     let obj = [];
 
     beforeEach(function() {
@@ -128,7 +128,7 @@ describe('Parser A', function() {
     });
 });
 
-describe('Parser B', function() {
+describe('_parserB', function() {
     let obj = [];
 
     beforeEach(function() {
@@ -224,13 +224,8 @@ describe('Parser B', function() {
     });
 });
 
-describe('Parser C', function() {
+describe('_parserC', function() {
     let obj = [];
-    const SOH = 0x01,
-        EOT = 0x04;
-
-    const BEGIN_MARKER = String.fromCharCode(SOH),
-        END_MARKER = String.fromCharCode(EOT);
 
     beforeEach(function() {
         parser.on('json', (json) => {
