@@ -16,5 +16,8 @@
   },
   "dependencies": {
     "eventemitter3": "^3.0.1"
-  }
+  },
+  "files": [
+    "lib"
+  ]
 }

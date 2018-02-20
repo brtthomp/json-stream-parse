@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const expect = require('chai').expect;
 
 const Parser = require('../lib/index.js');
@@ -32,7 +34,165 @@ describe("_parse", function() {
     })
 });
 
-describe('_parserA', function() {
+describe("setters", function() {
+    describe("startMarker", function() {
+        it("Should set the start marker with a string", function() {
+            parser.startMarker = "a";
+            expect(parser.startMarker).to.equal(0x61);
+            expect(parser._startMarker).to.equal(0x61);
+        });
+    
+        it("Should fail to set marker with string with more than 1 character", function() {
+            let error = null;
+            try {
+                parseer.startMarker = "asdf";
+            } catch (err) {
+                error = err;
+            }
+            expect(error).to.be.instanceof(Error);
+            expect(parser.startMarker).to.equal(SOH);
+            expect(parser._startMarker).to.equal(SOH);
+        });
+    
+        it("Should set the start marker with a valid number", function() {
+            parser.startMarker = 0x00;
+            expect(parser.startMarker).to.equal(0x00);
+            expect(parser._startMarker).to.equal(0x00);
+            parser.startMarker = 0x23;
+            expect(parser.startMarker).to.equal(0x23);
+            expect(parser._startMarker).to.equal(0x23);
+            parser.startMarker = 0x7F;
+            expect(parser.startMarker).to.equal(0x7F);
+            expect(parser._startMarker).to.equal(0x7F);
+        });
+    
+        it("Should error on invalid input", function() {
+            let error = null;
+            try {
+                parser.startMarker = {};
+            } catch (err) {
+                error = err;
+            }
+            expect(error).to.be.instanceof(Error);
+            expect(parser.startMarker).to.equal(SOH);
+            expect(parser._startMarker).to.equal(SOH);
+            error = null;
+    
+            try {
+                parser.startMarker = [];
+            } catch (err) {
+                error = err;
+            }
+            expect(error).to.be.instanceof(Error);
+            expect(parser.startMarker).to.equal(SOH);
+            expect(parser._startMarker).to.equal(SOH);
+            error = null;
+        });
+    
+        it("Should error on invalid number range", function() {
+            let error = null;
+            try {
+                parser.startMarker = -1;
+            } catch (err) {
+                error = err;
+            }
+            expect(error).to.be.instanceof(Error);
+            expect(parser.startMarker).to.equal(SOH);
+            expect(parser._startMarker).to.equal(SOH);
+            error = null;
+    
+            try {
+                parser.startMarker = 0x80;
+            } catch (err) {
+                error = err;
+            }
+            expect(error).to.be.instanceof(Error);
+            expect(parser.startMarker).to.equal(SOH);
+            expect(parser._startMarker).to.equal(SOH);
+            error = null;
+        });
+    });
+    
+    describe("endMarker", function() {
+        it("Should set the start marker with a string", function() {
+            parser.endMarker = "a";
+            expect(parser.endMarker).to.equal(0x61);
+            expect(parser._endMarker).to.equal(0x61);
+        });
+    
+        it("Should fail to set marker with string with more than 1 character", function() {
+            let error = null;
+            try {
+                parseer.endMarker = "asdf";
+            } catch (err) {
+                error = err;
+            }
+            expect(error).to.be.instanceof(Error);
+            expect(parser.endMarker).to.equal(EOT);
+            expect(parser._endMarker).to.equal(EOT);
+        });
+    
+        it("Should set the start marker with a valid number", function() {
+            parser.endMarker = 0x00;
+            expect(parser.endMarker).to.equal(0x00);
+            expect(parser._endMarker).to.equal(0x00);
+            parser.endMarker = 0x23;
+            expect(parser.endMarker).to.equal(0x23);
+            expect(parser._endMarker).to.equal(0x23);
+            parser.endMarker = 0x7F;
+            expect(parser.endMarker).to.equal(0x7F);
+            expect(parser._endMarker).to.equal(0x7F);
+        });
+    
+        it("Should error on invalid input", function() {
+            let error = null;
+            try {
+                parser.endMarker = {};
+            } catch (err) {
+                error = err;
+            }
+            expect(error).to.be.instanceof(Error);
+            expect(parser.endMarker).to.equal(EOT);
+            expect(parser._endMarker).to.equal(EOT);
+            error = null;
+    
+            try {
+                parser.endMarker = [];
+            } catch (err) {
+                error = err;
+            }
+            expect(error).to.be.instanceof(Error);
+            expect(parser.endMarker).to.equal(EOT);
+            expect(parser._endMarker).to.equal(EOT);
+            error = null;
+        });
+    
+        it("Should error on invalid number range", function() {
+            let error = null;
+            try {
+                parser.endMarker = -1;
+            } catch (err) {
+                error = err;
+            }
+            expect(error).to.be.instanceof(Error);
+            expect(parser.endMarker).to.equal(EOT);
+            expect(parser._endMarker).to.equal(EOT);
+            error = null;
+    
+            try {
+                parser.endMarker = 0x80;
+            } catch (err) {
+                error = err;
+            }
+            expect(error).to.be.instanceof(Error);
+            expect(parser.endMarker).to.equal(EOT);
+            expect(parser._endMarker).to.equal(EOT);
+            error = null;
+        });
+    });
+});
+
+describe('_algorithm1', function() {
     let obj = [];
 
     beforeEach(function() {
@@ -48,7 +208,7 @@ describe('_parserA', function() {
     it('Should skip test when no valid starting character', function(done) {
         parser._buffer = Buffer.from("asdf", 'utf8');
 
-        parser._parserA(() => {
+        parser._algorithm1(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.be.empty;
@@ -59,7 +219,7 @@ describe('_parserA', function() {
     it("Should keep buffer if packet is not complete", function(done) {
         parser._buffer = Buffer.from(`[asdf`, 'utf8');
 
-        parser._parserA(() => {
+        parser._algorithm1(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer).to.deep.equal(Buffer.from(`[asdf`, 'utf8'));
             expect(obj).to.be.empty;
@@ -70,7 +230,7 @@ describe('_parserA', function() {
     it("Should parse one JSON packet", function(done) {
         parser._buffer = Buffer.from(`{}`, 'utf8');
 
-        parser._parserA(() => {
+        parser._algorithm1(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(1);
@@ -82,7 +242,7 @@ describe('_parserA', function() {
     it("Parse two messages in one packet", function(done) {
         parser._buffer = Buffer.from(`{}[]`, 'utf8');
 
-        parser._parserA(() => {
+        parser._algorithm1(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(2);
@@ -95,7 +255,7 @@ describe('_parserA', function() {
     it("Parse one message and buffer the rest", function(done) {
         parser._buffer = Buffer.from(`{}[`, 'utf8');
 
-        parser._parserA(() => {
+        parser._algorithm1(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer).to.deep.equal(Buffer.from(`[`, 'utf8'));
             expect(obj).to.have.lengthOf(1);
@@ -107,7 +267,7 @@ describe('_parserA', function() {
     it("Should parse two messages partially split between two packets", function(done) {
         parser._buffer = Buffer.from(`{"test":"te`, 'utf8');
 
-        parser._parserA(() => {
+        parser._algorithm1(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer).to.deep.equal(Buffer.from(`{"test":"te`, 'utf8'));
             expect(obj).to.have.lengthOf(0);
@@ -116,7 +276,7 @@ describe('_parserA', function() {
                 Buffer.from(`{"test":"te`, 'utf8'),
                 Buffer.from(`st"}{}`, 'utf8')
             ])
-            parser._parserA(() => {
+            parser._algorithm1(() => {
                 expect(parser._buffer).to.be.instanceof(Buffer);
                 expect(parser._buffer.length).length.to.equal(0);
                 expect(obj).to.have.lengthOf(2);
@@ -128,7 +288,7 @@ describe('_parserA', function() {
     });
 });
 
-describe('_parserB', function() {
+describe('_algorithm2', function() {
     let obj = [];
 
     beforeEach(function() {
@@ -144,7 +304,7 @@ describe('_parserB', function() {
     it('Should skip test when no valid starting character', function(done) {
         parser._buffer = Buffer.from("asdf", 'utf8');
 
-        parser._parserB(() => {
+        parser._algorithm2(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.be.empty;
@@ -155,7 +315,7 @@ describe('_parserB', function() {
     it("Should keep buffer if packet is not complete", function(done) {
         parser._buffer = Buffer.from(`[asdf`, 'utf8');
 
-        parser._parserB(() => {
+        parser._algorithm2(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer).to.deep.equal(Buffer.from(`[asdf`, 'utf8'));
             expect(obj).to.be.empty;
@@ -166,7 +326,7 @@ describe('_parserB', function() {
     it("Should parse one JSON packet", function(done) {
         parser._buffer = Buffer.from(`{}`, 'utf8');
 
-        parser._parserB(() => {
+        parser._algorithm2(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(1);
@@ -178,7 +338,7 @@ describe('_parserB', function() {
     it("Parse two messages in one packet", function(done) {
         parser._buffer = Buffer.from(`{}[]`, 'utf8');
 
-        parser._parserB(() => {
+        parser._algorithm2(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(2);
@@ -191,7 +351,7 @@ describe('_parserB', function() {
     it("Parse one message and buffer the rest", function(done) {
         parser._buffer = Buffer.from(`{}[`, 'utf8');
 
-        parser._parserB(() => {
+        parser._algorithm2(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer).to.deep.equal(Buffer.from(`[`, 'utf8'));
             expect(obj).to.have.lengthOf(1);
@@ -203,7 +363,7 @@ describe('_parserB', function() {
     it("Should parse two messages partially split between two packets", function(done) {
         parser._buffer = Buffer.from(`{"test":"te`, 'utf8');
 
-        parser._parserB(() => {
+        parser._algorithm2(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer).to.deep.equal(Buffer.from(`{"test":"te`, 'utf8'));
             expect(obj).to.have.lengthOf(0);
@@ -212,7 +372,7 @@ describe('_parserB', function() {
                 Buffer.from(`{"test":"te`, 'utf8'),
                 Buffer.from(`st"}{}`, 'utf8')
             ])
-            parser._parserB(() => {
+            parser._algorithm2(() => {
                 expect(parser._buffer).to.be.instanceof(Buffer);
                 expect(parser._buffer.length).length.to.equal(0);
                 expect(obj).to.have.lengthOf(2);
@@ -224,7 +384,7 @@ describe('_parserB', function() {
     });
 });
 
-describe('_parserC', function() {
+describe('_algorithm3', function() {
     let obj = [];
 
     beforeEach(function() {
@@ -240,7 +400,7 @@ describe('_parserC', function() {
     it('Should skip test when no valid starting character', function(done) {
         parser._buffer = Buffer.from("asdf", 'utf8');
 
-        parser._parserC(() => {
+        parser._algorithm3(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.be.empty;
@@ -251,7 +411,7 @@ describe('_parserC', function() {
     it("Should keep buffer if packet is not complete", function(done) {
         parser._buffer = Buffer.from(`${BEGIN_MARKER}asdf`, 'utf8');
 
-        parser._parserC(() => {
+        parser._algorithm3(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer).to.deep.equal(Buffer.from(`${BEGIN_MARKER}asdf`, 'utf8'));
             expect(obj).to.be.empty;
@@ -262,7 +422,7 @@ describe('_parserC', function() {
     it("Should parse one JSON packet", function(done) {
         parser._buffer = Buffer.from(`${BEGIN_MARKER}{}${END_MARKER}`, 'utf8');
 
-        parser._parserC(() => {
+        parser._algorithm3(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(1);
@@ -274,7 +434,7 @@ describe('_parserC', function() {
     it("Parse two messages in one packet", function(done) {
         parser._buffer = Buffer.from(`${BEGIN_MARKER}{}${END_MARKER}${BEGIN_MARKER}[]${END_MARKER}`, 'utf8');
 
-        parser._parserC(() => {
+        parser._algorithm3(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer.length).length.to.equal(0);
             expect(obj).to.have.lengthOf(2);
@@ -287,7 +447,7 @@ describe('_parserC', function() {
     it("Parse one message and buffer the rest", function(done) {
         parser._buffer = Buffer.from(`${BEGIN_MARKER}{}${END_MARKER}${BEGIN_MARKER}[`, 'utf8');
 
-        parser._parserC(() => {
+        parser._algorithm3(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer).to.deep.equal(Buffer.from(`${BEGIN_MARKER}[`, 'utf8'));
             expect(obj).to.have.lengthOf(1);
@@ -299,7 +459,7 @@ describe('_parserC', function() {
     it("Should parse two messages partially split between two packets", function(done) {
         parser._buffer = Buffer.from(`${BEGIN_MARKER}{"test":"te`, 'utf8');
 
-        parser._parserC(() => {
+        parser._algorithm3(() => {
             expect(parser._buffer).to.be.instanceof(Buffer);
             expect(parser._buffer).to.deep.equal(Buffer.from(`${BEGIN_MARKER}{"test":"te`, 'utf8'));
             expect(obj).to.have.lengthOf(0);
@@ -308,7 +468,7 @@ describe('_parserC', function() {
                 Buffer.from(`${BEGIN_MARKER}{"test":"te`, 'utf8'),
                 Buffer.from(`st"}${END_MARKER}${BEGIN_MARKER}{}${END_MARKER}`, 'utf8')
             ])
-            parser._parserC(() => {
+            parser._algorithm3(() => {
                 expect(parser._buffer).to.be.instanceof(Buffer);
                 expect(parser._buffer.length).length.to.equal(0);
                 expect(obj).to.have.lengthOf(2);
