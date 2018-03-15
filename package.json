@@ -1,6 +1,6 @@
 {
   "name": "json-stream-parse",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Parses strings into JSON objects/arrays via a nodejs stream",
   "main": "lib/index.js",
   "scripts": {
