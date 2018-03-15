@@ -1,0 +1,41 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es6": true,
+        "node": true,
+        "mocha": true
+    },
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "sourceType": "module"
+    },
+    "extends": "eslint:all",
+    "rules": {
+        "dot-location": ["error", "property"],
+        "padded-blocks": ["error", { "classes": "always" }],
+        "arrow-body-style": ["error", "always"],
+        "quote-props": ["error", "as-needed"],
+        "id-length": ["error", { "exceptions": ["_", "i"] }],
+        "one-var": 0,
+        "object-curly-spacing": ["error", "always"],
+        "no-underscore-dangle": 0,
+        "consistent-return": 0,
+        "multiline-comment-style": 0,
+        "class-methods-use-this": 0,
+        "array-bracket-spacing": ["error", "always"],
+        "no-ternary": 0,
+        "operator-linebreak": ["error", "after"],
+        "no-magic-numbers": ["error", { "ignore": [-1, 0, 1] }],
+        "max-statements": 0,
+        "max-params": 0,
+        "func-style": ["error", "declaration"],
+        "max-lines": 0,
+        "no-eq-null": 0,
+        "linebreak-style": 0,
+        "sort-vars": 0,
+        "prefer-destructuring": ["error", {"object": true, "array": false}]
+    }
+}
