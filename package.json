@@ -7,7 +7,7 @@
     "test": "mocha"
   },
   "author": "Brett Thompson <brett.thompson@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "chai": "^4.1.2",
     "json-stream-parser": "github:tsi-inc/json-stream-parser",
@@ -19,5 +19,24 @@
   },
   "files": [
     "lib"
-  ]
+  ],
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brtthomp/json-stream-parse.git"
+  },
+  "keywords": [
+    "json",
+    "parse",
+    "streaming",
+    "parser",
+    "parsing"
+  ],
+  "bugs": {
+    "url": "https://github.com/brtthomp/json-stream-parse/issues"
+  },
+  "homepage": "https://github.com/brtthomp/json-stream-parse#readme"
 }
