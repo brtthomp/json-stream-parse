@@ -47,7 +47,7 @@ gulp.task("publish", (done) => {
     runSequence(
         "eslint",
         "test",
-        "tag",
+        // "tag",
         "npm",
         done
     );
