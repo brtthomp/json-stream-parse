@@ -1,3 +1,8 @@
+# 1.0.3
+
+### BUGFIXES
+* Rogue `console.log` statements made their way into the release of `1.0.2`
+
 # 1.0.2
 
 ### BUGFIXES
